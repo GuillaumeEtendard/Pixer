@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "198454579927",
+    "firebase_url": "https://pixer-65d1e.firebaseio.com",
+    "project_id": "pixer-65d1e",
+    "storage_bucket": "pixer-65d1e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198454579927:android:eef8c72d34fad51d",
+        "android_client_info": {
+          "package_name": "com.supinternet.pixer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "198454579927-flmrp8stfnsta8oedi8l1rpoqmg0l3km.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9hFT527NtqmTXb7xlx-H_ccTHQBXForU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
