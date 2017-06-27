@@ -11,18 +11,4 @@
         android:onClick="onClick"
         android:text="@string/signin_button"/>
 
-    <Button
-        android:id="@+id/signin_facebook_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClick"
-        android:text="@string/signin_facebook_button"/>
-
-    <Button
-        android:id="@+id/signin_google_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onClick"
-        android:text="@string/signin_google_button"/>
-
 </LinearLayout>

@@ -3,31 +3,48 @@ package com.supinternet.pixer;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 
-public class MainActivity extends AppCompatActivity {
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-    Button signInButton, signInFacebookButton, signInGoogleButton;
+public class MainActivity extends BaseActivity {
+
+    Button signInButton;
+    private FirebaseAuth mAuth;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         signInButton = (Button) findViewById(R.id.signin_button);
-        signInFacebookButton = (Button) findViewById(R.id.signin_facebook_button);
-        signInGoogleButton = (Button) findViewById(R.id.signin_google_button);
+        mAuth = FirebaseAuth.getInstance();
 
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+
+        System.out.println(mAuth);
+
+        if (currentUser != null) {
+            if (currentUser.isEmailVerified()) {
+                Intent intent = new Intent(this, PostsActivity.class);
+                startActivity(intent);
+            }
+        }
     }
 
     public void onClick(View v) {
-
         if (v.getId() == R.id.signin_button) {
             Intent intent = new Intent(this, EmailPasswordActivity.class);
-            startActivity(intent);
-
-        } else if (v.getId() == R.id.signin_google_button) {
-            Intent intent = new Intent(this, GoogleSignInActivity.class);
             startActivity(intent);
         }
     }
