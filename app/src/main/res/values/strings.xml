@@ -3,6 +3,16 @@
     <string name="signin_button">Register / Login</string>
     <string name="loading">Loading…</string>
 
+    <string name="home">Home</string>
+    <string name="my_profile">My Profile</string>
+    <string name="new_post">New Post</string>
+
+    <string name="post_title">Post Title</string>
+    <string name="upload_image">Upload Image</string>
+    <string name="add_post">Add Post</string>
+
+    <string name="post_image_desc">Post Image</string>
+    <string name="like_icon_desc">Like</string>
     <string name="label_emailpassword">Email/Password Authentication</string>
     <string name="desc_emailpassword">Use an email and password to authenticate with Firebase.</string>
 
@@ -31,7 +41,4 @@
 
     <string name="id_fmt">User ID: %s</string>
     <string name="email_fmt">Email: %s</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -14,12 +14,14 @@ import com.bumptech.glide.Glide;
 import com.firebase.ui.storage.images.FirebaseImageLoader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -68,7 +70,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.MyViewHolder
     }
 
     @Override
-    public void onBindViewHolder(MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MyViewHolder holder, int position) {
         final Post post = postsList.get(position);
         holder.postContent.setText(post.content);
 
@@ -94,9 +96,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.MyViewHolder
         } else {
             holder.likeButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
         }
+
         holder.postLikeCount.setText(String.valueOf(post.likeCounter));
 
-        final MyViewHolder holderFinal = holder;
         holder.likeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View starView) {
@@ -114,19 +116,16 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.MyViewHolder
                         }
                         System.out.println("likes post " + p);
                         if (p.likes.containsKey(getUid())) {
-                            System.out.println("unlikes count : " + p.likeCounter);
                             // Unlike post
                             p.likeCounter = p.likeCounter - 1;
                             p.likes.remove(getUid());
                             isLike = false;
                         } else {
-                            System.out.println("likes count : " + p.likeCounter);
                             // Like post
                             p.likeCounter = p.likeCounter + 1;
                             p.likes.put(getUid(), true);
                             isLike = true;
                         }
-                        System.out.println("bool f : " + isLike);
                         likeCount = p.likeCounter;
 
                         mutableData.setValue(p);
@@ -136,18 +135,11 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.MyViewHolder
                     @Override
                     public void onComplete(DatabaseError databaseError, boolean b,
                                            DataSnapshot dataSnapshot) {
-                        holderFinal.postLikeCount.setText(String.valueOf(likeCount));
-                        System.out.println("like bool " + isLike);
-                        if (isLike) {
-                            holderFinal.likeButton.setImageResource(R.drawable.ic_favorite_black_24dp);
-                        } else {
-                            holderFinal.likeButton.setImageResource(R.drawable.ic_favorite_border_black_24dp);
-                        }
-                        System.out.println("like count " + likeCount);
+                        holder.postLikeCount.setText(String.valueOf(likeCount));
+
                         Log.d(TAG, "postTransaction:onComplete:" + databaseError);
                     }
                 });
-                System.out.println("likes clicked" + likeCount);
             }
         });
     }

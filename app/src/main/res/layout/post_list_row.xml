@@ -7,6 +7,7 @@
         android:id="@+id/post_image"
         android:layout_width="match_parent"
         android:layout_height="250dp"
+        android:contentDescription="@string/post_image_desc"
         android:layout_alignParentTop="true"
         android:scaleType="centerCrop" />
 
@@ -35,7 +36,7 @@
             android:layout_height="50dp"
             android:background="@null"
             android:backgroundTint="@null"
-            android:contentDescription="Like"
+            android:contentDescription="@string/like_icon_desc"
             android:src="@drawable/ic_favorite_border_black_24dp" />
 
         <TextView

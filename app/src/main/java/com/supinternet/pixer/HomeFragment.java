@@ -92,17 +92,6 @@ public class HomeFragment extends Fragment {
                 .limitToLast(100);
         postsQuery.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                Post newPost = dataSnapshot.getValue(Post.class);
-
-                if (newPost != null) {
-                    postsList.remove(newPost);
-                }
-                mAdapter.notifyDataSetChanged();
-            }
-
-
-            @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 Post newPost = dataSnapshot.getValue(Post.class);
 
@@ -115,12 +104,40 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Post newPost = dataSnapshot.getValue(Post.class);
+                if(newPost != null){
+                    String id = newPost.id;
 
+                    int position = -1;
+
+                    for (int i = 0; i < postsList.size(); i++) {
+                        if (postsList.get(i).id.equals(id)) {
+                            position = i;
+                        }
+                    }
+
+                    if (postsList != null && position >= 0) {
+                        postsList.set(position, newPost);
+                    }
+                }
+
+                mAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Post newPost = dataSnapshot.getValue(Post.class);
+
+                if (newPost != null) {
+                    postsList.remove(newPost);
+                }
+
+                mAdapter.notifyDataSetChanged();
             }
 
             @Override
