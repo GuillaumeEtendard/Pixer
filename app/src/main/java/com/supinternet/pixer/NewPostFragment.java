@@ -1,17 +1,19 @@
 package com.supinternet.pixer;
 
+
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
+import android.app.Fragment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -33,7 +35,13 @@ import com.google.firebase.storage.UploadTask;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NewPostActivity extends AppCompatActivity {
+import static android.app.Activity.RESULT_OK;
+
+
+/**
+ * A simple {@link Fragment} subclass.
+ */
+public class NewPostFragment extends Fragment {
 
     private DatabaseReference mDatabase;
     private FirebaseAuth mAuth;
@@ -54,27 +62,28 @@ public class NewPostActivity extends AppCompatActivity {
 
     private FirebaseUser currentUser;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_post);
+    public NewPostFragment() {
+        // Required empty public constructor
+    }
 
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View v = inflater.inflate(R.layout.fragment_new_post, container, false);
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        mTextContent = (EditText) findViewById(R.id.title_post_field);
-        mSubmitButton = (Button) findViewById(R.id.submit_post_button);
+        mTextContent = (EditText) v.findViewById(R.id.title_post_field);
+        mSubmitButton = (Button) v.findViewById(R.id.submit_post_button);
 
 
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
+        chooseImg = (Button) v.findViewById(R.id.chooseImg);
+        imgView = (ImageView) v.findViewById(R.id.imgView);
 
-        chooseImg = (Button) findViewById(R.id.chooseImg);
-        imgView = (ImageView) findViewById(R.id.imgView);
-
-        progressDialog = new ProgressDialog(this);
+        progressDialog = new ProgressDialog(getContext());
         progressDialog.setMessage("Uploading....");
-
 
         chooseImg.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,10 +94,22 @@ public class NewPostActivity extends AppCompatActivity {
                 startActivityForResult(Intent.createChooser(intent, "Select Image"), PICK_IMAGE_REQUEST);
             }
         });
+
+        mSubmitButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                submitPost();
+            }
+        });
+
+        return v;
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
@@ -96,28 +117,34 @@ public class NewPostActivity extends AppCompatActivity {
 
             try {
                 //getting image from gallery
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), filePath);
 
                 //Setting image to ImageView
                 imgView.setImageBitmap(bitmap);
+
+                uploadImage(filePath);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void submitPost(View v) {
+    public void submitPost() {
         final String content = mTextContent.getText().toString();
 
+        if (filePath == null) {
+            chooseImg.setError("Required");
+            return;
+        }
         // Title & filePath are required
-        if (TextUtils.isEmpty(content) || filePath == null) {
+        if (TextUtils.isEmpty(content)) {
             mTextContent.setError("Required");
             return;
         }
 
         // Disable button so there are no multi-posts
         setEditingEnabled(false);
-        Toast.makeText(this, "Posting...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Posting...", Toast.LENGTH_SHORT).show();
 
         currentUser = mAuth.getCurrentUser();
         final String userId = currentUser.getUid();
@@ -130,26 +157,35 @@ public class NewPostActivity extends AppCompatActivity {
 
                         if (user == null) {
                             // User is null, error out
-                            Toast.makeText(NewPostActivity.this,
+                            Toast.makeText(getContext(),
                                     "Error: could not fetch user.",
                                     Toast.LENGTH_SHORT).show();
                         } else {
                             // Upload image
-                            uploadSuccess = uploadImage(filePath);
-                            System.out.println(uploadSuccess);
+
+                            uploadSuccess = true;
+
+                            System.out.println("upload success" + uploadSuccess);
+
                             // Write new post
+                            User newUser = new User(user.getUid(), user.getEmail());
                             if (uploadSuccess) {
-                            writeNewPost(userId, user.getEmail(), content);
+                                System.out.println("segment" + filePath.getLastPathSegment());
+                                writeNewPost(userId, user.getEmail(), content, filePath.getLastPathSegment(), newUser);
                             } else {
-                                Toast.makeText(NewPostActivity.this,
-                                        "Error: empty file",
+                                Toast.makeText(getContext(),
+                                        "Uploading error",
                                         Toast.LENGTH_SHORT).show();
                             }
                         }
 
                         // Finish this Activity, back to the stream
                         setEditingEnabled(true);
-                        finish();
+                        Fragment newFragment = new HomeFragment();
+
+                        getFragmentManager().beginTransaction().replace(
+                                R.id.main_fragment_container, newFragment)
+                                .commit();
                     }
 
                     @Override
@@ -168,15 +204,15 @@ public class NewPostActivity extends AppCompatActivity {
         }
     }
 
-    // [START write_fan_out]
-    private void writeNewPost(String userId, String username, String content) {
+    private void writeNewPost(String userId, String username, String content, String imageName, User user) {
         // Create new post at /user-posts/$userid/$postid
         String key = mDatabase.child("posts").push().getKey();
-        Post post = new Post(userId, username, content);
+        String id = key;
+        Post post = new Post(id, userId, username, content, imageName, user);
         Map<String, Object> postValues = post.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/posts/" + userId + "/" + key, postValues);
+        childUpdates.put("/posts/" + key, postValues);
 
         mDatabase.updateChildren(childUpdates);
     }
@@ -184,19 +220,20 @@ public class NewPostActivity extends AppCompatActivity {
     private Boolean uploadImage(Uri fileUri) {
         progressDialog.show();
 
-        final StorageReference photoRef = storageRef.child("images/" + mAuth.getCurrentUser().getUid())
+        final StorageReference photoRef = storageRef.child("images")
+                .child(mAuth.getCurrentUser().getUid())
                 .child(fileUri.getLastPathSegment());
 
         uploadSuccess = true;
         // Upload file to Firebase Storage
         photoRef.putFile(fileUri)
-                .addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                .addOnSuccessListener(getActivity(), new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         progressDialog.dismiss();
                     }
                 })
-                .addOnFailureListener(this, new OnFailureListener() {
+                .addOnFailureListener(getActivity(), new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         uploadSuccess = false;

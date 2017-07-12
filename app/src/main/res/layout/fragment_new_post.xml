@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
 
-
     <LinearLayout
         android:id="@+id/new_post_fields"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_weight="0.7"
@@ -23,25 +23,25 @@
             android:inputType="textLongMessage" />
 
         <Button
-            android:layout_width="match_parent"
+            android:id="@+id/chooseImg"
+            style="@style/AppTheme.Button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose Image"
-            android:id="@+id/chooseImg"/>
+            android:text="Upload Image" />
 
         <ImageView
+            android:id="@+id/imgView"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:id="@+id/imgView"/>
+            android:layout_height="300dp" />
 
         <Button
             android:id="@+id/submit_post_button"
+            style="@style/AppTheme.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="submitPost"
-            android:text="Add post"/>
+            android:text="Add post" />
 
 
     </LinearLayout>
 
-
-</LinearLayout>
+</RelativeLayout>
