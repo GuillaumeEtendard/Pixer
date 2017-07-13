@@ -13,8 +13,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/post_title"
+        android:textColor="@color/colorPrimary"
         android:inputType="textLongMessage" />
-
 
     <Button
         android:id="@+id/chooseImg"
