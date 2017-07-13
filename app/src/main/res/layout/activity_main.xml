@@ -11,7 +11,8 @@
         android:layout_height="?attr/actionBarSize"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
-        android:theme="@style/AppTheme" />
+        android:theme="@style/AppTheme"
+        app:popupTheme="@style/AppTheme.Popup"/>
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/main_fragment_container"
