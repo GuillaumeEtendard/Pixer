@@ -171,7 +171,7 @@ public class NewPostFragment extends Fragment {
                             User newUser = new User(user.getUid(), user.getEmail());
                             if (uploadSuccess) {
                                 System.out.println("segment" + filePath.getLastPathSegment());
-                                writeNewPost(userId, user.getEmail(), content, filePath.getLastPathSegment(), newUser);
+                                writeNewPost(userId, user.getDisplayName(), content, filePath.getLastPathSegment(), newUser);
                             } else {
                                 Toast.makeText(getContext(),
                                         "Uploading error",
@@ -207,8 +207,7 @@ public class NewPostFragment extends Fragment {
     private void writeNewPost(String userId, String username, String content, String imageName, User user) {
         // Create new post at /user-posts/$userid/$postid
         String key = mDatabase.child("posts").push().getKey();
-        String id = key;
-        Post post = new Post(id, userId, username, content, imageName, user);
+        Post post = new Post(key, userId, username, content, imageName, user);
         Map<String, Object> postValues = post.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();

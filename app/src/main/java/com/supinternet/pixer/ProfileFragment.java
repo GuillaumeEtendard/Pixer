@@ -76,7 +76,7 @@ public class ProfileFragment extends Fragment {
         getPosts();
         mAdapter.notifyDataSetChanged();
 
-        userConnected.setText(currentUser.getEmail());
+        userConnected.setText(currentUser.getDisplayName());
 
         return v;
     }

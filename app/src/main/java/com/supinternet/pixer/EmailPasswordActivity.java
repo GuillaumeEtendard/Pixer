@@ -18,6 +18,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class EmailPasswordActivity extends BaseActivity implements
         View.OnClickListener {
@@ -26,8 +29,10 @@ public class EmailPasswordActivity extends BaseActivity implements
 
     private TextView mStatusTextView;
     private TextView mDetailTextView;
+    private TextView mStatusDetail;
     private EditText mEmailField;
     private EditText mPasswordField;
+    private DatabaseReference mDatabase;
 
     private FirebaseAuth mAuth;
 
@@ -36,9 +41,12 @@ public class EmailPasswordActivity extends BaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_email_password);
 
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
         // Views
         mStatusTextView = (TextView) findViewById(R.id.status);
         mDetailTextView = (TextView) findViewById(R.id.detail);
+        mStatusDetail = (TextView) findViewById(R.id.status_detail);
         mEmailField = (EditText) findViewById(R.id.field_email);
         mPasswordField = (EditText) findViewById(R.id.field_password);
 
@@ -75,8 +83,9 @@ public class EmailPasswordActivity extends BaseActivity implements
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
                             sendEmailVerification();
+                            onAuthSuccess(task.getResult().getUser());
+                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -90,6 +99,35 @@ public class EmailPasswordActivity extends BaseActivity implements
                 });
     }
 
+    private void onAuthSuccess(FirebaseUser user) {
+        String username = usernameFromEmail(user.getEmail());
+
+        // Write new user
+        writeNewUser(user.getUid(), username, user.getEmail());
+
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser != null) {
+            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(username).build();
+            firebaseUser.updateProfile(profileUpdates);
+        }
+    }
+
+    private String usernameFromEmail(String email) {
+        if (email.contains("@")) {
+            return email.split("@")[0];
+        } else {
+            return email;
+        }
+    }
+
+    private void writeNewUser(String userId, String name, String email) {
+        User user = new User(name, email);
+
+        mDatabase.child("users").child(userId).setValue(user);
+    }
+
+    // Sign In with email and password: if successfull, launch mainactivity
     private void signIn(String email, String password) {
         Log.d(TAG, "signIn:" + email);
         if (!validateForm()) {
@@ -105,7 +143,6 @@ public class EmailPasswordActivity extends BaseActivity implements
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
                             Intent intent = new Intent(EmailPasswordActivity.this, MainActivity.class);
                             startActivity(intent);
                         } else {
@@ -124,11 +161,13 @@ public class EmailPasswordActivity extends BaseActivity implements
                 });
     }
 
+    // Sign Out
     private void signOut() {
         mAuth.signOut();
         updateUI(null);
     }
 
+    // Send Email Account Verification
     private void sendEmailVerification() {
         // Disable button
         findViewById(R.id.verify_email_button).setEnabled(false);
@@ -156,6 +195,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                 });
     }
 
+    // Form Validator
     private boolean validateForm() {
         boolean valid = true;
 
@@ -178,13 +218,14 @@ public class EmailPasswordActivity extends BaseActivity implements
         return valid;
     }
 
+    // Update Acitivity Layout
     private void updateUI(FirebaseUser user) {
         hideProgressDialog();
         if (user != null) {
             mStatusTextView.setText(getString(R.string.emailpassword_status_fmt,
                     user.getEmail(), user.isEmailVerified()));
-            mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
-
+            mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getDisplayName()));
+            mStatusDetail.setText(getString(R.string.status_detail_message));
             findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
             findViewById(R.id.email_password_fields).setVisibility(View.GONE);
             findViewById(R.id.signed_in_buttons).setVisibility(View.VISIBLE);
